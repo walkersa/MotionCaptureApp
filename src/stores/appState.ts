@@ -127,12 +127,8 @@ export function useAppState() {
 // Helper functions for preferences persistence
 async function loadPreferencesFromDB(): Promise<UserPreferences | null> {
   try {
-    // Store preferences in a simple key-value table in IndexedDB
-    // This is a simplified implementation - in a real app, you might want a dedicated preferences table
-    const stored = localStorage.getItem('motion-capture-preferences');
-    if (stored) {
-      return JSON.parse(stored);
-    }
+    // TODO: Implement IndexedDB storage for preferences
+    // For now, return null to use defaults
     return null;
   } catch (error) {
     console.error('Failed to load preferences:', error);
@@ -142,8 +138,9 @@ async function loadPreferencesFromDB(): Promise<UserPreferences | null> {
 
 async function savePreferencesToDB(preferences: UserPreferences): Promise<void> {
   try {
-    // Simplified storage - in practice, use IndexedDB for consistency
-    localStorage.setItem('motion-capture-preferences', JSON.stringify(preferences));
+    // TODO: Implement IndexedDB storage for preferences
+    // Temporary no-op to avoid localStorage usage
+    console.debug('Preferences would be saved:', preferences);
   } catch (error) {
     console.error('Failed to save preferences:', error);
   }
@@ -156,7 +153,7 @@ async function requestPersistentStorage(): Promise<void> {
       if (granted) {
         console.log('Persistent storage granted');
       } else {
-        console.warn('Persistent storage not granted');
+        console.debug('Persistent storage not granted - this is expected in development');
       }
     } catch (error) {
       console.error('Failed to request persistent storage:', error);

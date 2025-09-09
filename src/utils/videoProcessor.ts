@@ -38,25 +38,54 @@ export class VideoProcessor {
 
   private async loadFFmpeg(): Promise<void> {
     try {
-      const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+      // Use a more reliable CDN and version
+      const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm';
       
       this.ffmpeg.on('log', ({ message }) => {
-        console.log('[FFmpeg]', message);
+        console.debug('[FFmpeg]', message);
       });
 
       this.ffmpeg.on('progress', ({ progress, time }) => {
         console.log(`[FFmpeg] Progress: ${Math.round(progress * 100)}% (${time}s)`);
       });
 
+      // Try to load FFmpeg with proper error handling
+      console.log('Loading FFmpeg core files...');
+      
+      const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript');
+      const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+      
+      console.log('Core URL:', coreURL);
+      console.log('WASM URL:', wasmURL);
+
       await this.ffmpeg.load({
-        coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+        coreURL,
+        wasmURL,
       });
 
       console.log('FFmpeg loaded successfully');
     } catch (error) {
       console.error('Failed to load FFmpeg:', error);
-      throw new Error('Failed to initialize video processor');
+      console.error('Error details:', error);
+      
+      // Try fallback CDN
+      try {
+        console.log('Trying fallback CDN...');
+        const fallbackBaseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+        
+        const coreURL = await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.js`, 'text/javascript');
+        const wasmURL = await toBlobURL(`${fallbackBaseURL}/ffmpeg-core.wasm`, 'application/wasm');
+        
+        await this.ffmpeg.load({
+          coreURL,
+          wasmURL,
+        });
+        
+        console.log('FFmpeg loaded successfully with fallback CDN');
+      } catch (fallbackError) {
+        console.error('Fallback CDN also failed:', fallbackError);
+        throw new Error('Failed to initialize video processor: Unable to load FFmpeg core files. This may be due to network restrictions or CORS issues.');
+      }
     }
   }
 

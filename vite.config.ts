@@ -95,7 +95,8 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+    include: ['@ffmpeg/ffmpeg > @ffmpeg/util']
   },
   worker: {
     format: 'es'
